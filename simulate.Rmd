@@ -1,0 +1,53 @@
+---
+title: "labor_hw1_simulation"
+author: "b09303042"
+date: "2023-03-15"
+output: pdf_document
+---
+
+```{r}
+mu0 <- 0
+mu1 <- 2
+sigma0 <-2
+sigma1 <-1.5
+cov01 <- 0.5
+c <- 0.5
+```
+```{r}
+library(data.table)
+N <- 10^7
+set.seed(123)
+dt <- data.table(epsilon0 = rnorm(N, mean = 0, sd = sigma0),
+                 epsilon1 = rnorm(N, mean = 0, sd = sigma1))
+
+```
+```{r}
+dt[, w1 := (mu1 + epsilon1)]
+dt[, w0 := (mu0 + epsilon0)]
+
+```
+```{r}
+# Create binary column I
+dt[, I := as.integer(ifelse(w0 > w1, TRUE, FALSE))]
+
+```
+```{r}
+# Calculate expected values and Q
+E_w0_I0 <- mean(dt[I == 0, w0])
+E_w0_I1 <- mean(dt[I == 1, w0])
+E_w1_I0 <- mean(dt[I == 0, w1])
+E_w1_I1 <- mean(dt[I == 1, w1])
+
+E_eps0_I0 <- mean(dt[I == 0, epsilon0])
+E_eps0_I1 <- mean(dt[I == 1, epsilon0])
+E_eps1_I0 <- mean(dt[I == 0, epsilon1])
+E_eps1_I1 <- mean(dt[I == 1, epsilon1])
+```
+
+```{r}
+rho <- cov01/(sigma0*sigma1)
+sigma_nu <- sqrt(sigma0^2+sigma1^2-2*cov01)
+z <- (mu0-mu1+c)/sigma_nu
+eq1 <- mu0 +sigma0*sigma1/sigma_nu*(rho-sigma0/sigma1)*(dnorm(z)/(1-pnorm(z)))
+eq2<-mu1 +sigma0*sigma1/sigma_nu*(sigma1/sigma0-rho)*(dnorm(z)/(1-pnorm(z)))
+```
