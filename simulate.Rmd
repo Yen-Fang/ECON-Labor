@@ -4,6 +4,18 @@ author: "b09303042"
 date: "2023-03-15"
 output: pdf_document
 ---
+```{r}
+# Import data from a CSV file
+rrdata <- read.csv("psfd_rr2020_v202208_csv.csv")
+rrdata$age <- 112-rrdata$a02a
+rrdata$work <- ifelse(rrdata$w03 >= 3, 0, 1)
+library(ggplot2)
+library(dplyr)
+```
+```{r}
+result <- aggregate(work ~ age, data = rrdata, FUN = mean)
+ggplot(data = result) + geom_point(mapping = aes(x = age, y = work))
+```
 
 ```{r}
 mu0 <- 0
@@ -28,7 +40,7 @@ dt[, w0 := (mu0 + epsilon0)]
 ```
 ```{r}
 # Create binary column I
-dt[, I := as.integer(ifelse(w0 > w1, TRUE, FALSE))]
+dt[, I := as.integer(ifelse( w1 >= w0+c, TRUE, FALSE))]
 
 ```
 ```{r}
@@ -48,6 +60,8 @@ E_eps1_I1 <- mean(dt[I == 1, epsilon1])
 rho <- cov01/(sigma0*sigma1)
 sigma_nu <- sqrt(sigma0^2+sigma1^2-2*cov01)
 z <- (mu0-mu1+c)/sigma_nu
+
 eq1 <- mu0 +sigma0*sigma1/sigma_nu*(rho-sigma0/sigma1)*(dnorm(z)/(1-pnorm(z)))
+
 eq2<-mu1 +sigma0*sigma1/sigma_nu*(sigma1/sigma0-rho)*(dnorm(z)/(1-pnorm(z)))
 ```
