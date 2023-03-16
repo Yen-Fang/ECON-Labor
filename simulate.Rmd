@@ -14,7 +14,7 @@ library(dplyr)
 ```
 ```{r}
 result <- aggregate(work ~ age, data = rrdata, FUN = mean)
-ggplot(data = result) + geom_point(mapping = aes(x = age, y = work))
+ggplot(data = result) + geom_point(mapping = aes(x = work, y = age))
 ```
 
 ```{r}
