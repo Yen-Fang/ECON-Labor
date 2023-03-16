@@ -18,33 +18,36 @@ ggplot(data = result) + geom_point(mapping = aes(x = work, y = age))
 ```
 
 ```{r}
-mu0 <- 0
-mu1 <- 2
-sigma0 <-2
-sigma1 <-1.5
-cov01 <- 0.5
-c <- 0.5
+mu0 <- 1
+mu1 <- 0
+sigma0 <-1
+sigma1 <-3
+cov01 <- 1.7
+c <- 2
 ```
 ```{r}
-library(data.table)
+
 N <- 10^7
 set.seed(123)
-dt <- data.table(epsilon0 = rnorm(N, mean = 0, sd = sigma0),
-                 epsilon1 = rnorm(N, mean = 0, sd = sigma1))
+library(data.table)
+library(MASS)
+
+mu <- c(0, 0)
+sigma <- matrix(c(sigma0^2, cov01, cov01, sigma1^2), nrow = 2)
+
+set.seed(123)
+dt <- data.table(mvrnorm(n = N, mu = mu, Sigma = sigma))
+
+setnames(dt, c("epsilon0", "epsilon1"))
 
 ```
 ```{r}
-dt[, w1 := (mu1 + epsilon1)]
-dt[, w0 := (mu0 + epsilon0)]
+dt$w1 <- mu1 + dt$epsilon1
+dt$w0 <- mu0 + dt$epsilon0
+dt$I <- ifelse(dt$w1 >= c + dt$w0, 1, 0)
 
 ```
 ```{r}
-# Create binary column I
-dt[, I := as.integer(ifelse( w1 >= w0+c, TRUE, FALSE))]
-
-```
-```{r}
-# Calculate expected values and Q
 E_w0_I0 <- mean(dt[I == 0, w0])
 E_w0_I1 <- mean(dt[I == 1, w0])
 E_w1_I0 <- mean(dt[I == 0, w1])
